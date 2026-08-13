@@ -198,6 +198,8 @@ Three caveats matter for any writeup:
    changed each model's macro-F1 by 0.2–0.7 points, comparable to or larger than the gap
    between the models. Any claim about which model is better has to hold the schedule
    fixed and vary the seed instead.
+
+-- To Discuss:
 3. **The task may be easier than it looks.** A smoke run on 200 training examples for
    1 epoch already reached 0.857 test macro-F1; the full 9,290 examples reach only 0.913.
    Buying 5.6 points with 46× the data is a flat learning curve, characteristic of a task
@@ -214,10 +216,12 @@ Three caveats matter for any writeup:
 - **Repeat seeds (43, 44)** — the highest-value next step, since the BERT-vs-ModernBERT
   ordering rests entirely on single runs and the gap is smaller than the epoch-count
   effect.
-- **McNemar significance test** between the two encoders. The per-example predictions in
-  `results/preds/` are the required input, and `scipy` is already pinned for it.
 - **Learning curve** at 200 / 1,000 / 5,000 examples, to quantify caveat 3 above.
 - **CheckThat out-of-domain evaluation** — the paper's most interesting result;
   `data/CheckThat/` is currently empty.
 - **LLM arm:** prompt templates, LoRA fine-tuning on Llama-3.2-1B via `peft`, and the API
   adapter, to complete the comparison the paper makes.
+
+## What I would do if I had more time
+- **Analyze false positives** — mentioned in this report: "205 wrong predictions (7.9% of test) account for **97.9% of total loss**, and 125 of them are held at >99% confidence in the wrong class." I haven't had the chance to inspect these, but I would like to. What might these sentences have in common that fool my model?
+- **Try to improve performance on OOD data** — while reading the paper, the poor performance on tweets piqued my curiosity. Bell poses whether the models might perform better on OOD Twitter data if it was first standardized to normal grammar. I was also briefly thinking about whether we could use a combination of models. Since, according to the paper, AFaCTA outperforms in recall, perhaps there is a world where we could send positively classified sentences to a second model for verification. If I had more time, I would want to experiment to improve OOD prediction performance.
