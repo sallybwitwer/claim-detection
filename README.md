@@ -219,6 +219,46 @@ for f in sorted(glob.glob('results/runs/*/metrics.json')):
 "
 ```
 
+## Predicting on new text
+
+`scripts/predict.py` runs a fine-tuned model on sentences you supply:
+
+```bash
+.venv/bin/python scripts/predict.py --model ModernBERT \
+    --text "The unemployment rate fell to 3.4% in January 2023." \
+           "I think we should all try to be kinder to one another."
+```
+
+```
+claim  p(claim)=1.0000  The unemployment rate fell to 3.4% in January 2023.
+not_claim  p(claim)=0.0000  I think we should all try to be kinder to one another.
+```
+
+Two arguments, both required. `--model` takes `BERT` or `ModernBERT`; `--text` takes any
+number of sentences. Sentences are truncated at 128 tokens, matching training.
+
+Each name maps to a fixed checkpoint in the `CHECKPOINTS` dict at the top of the script —
+edit those paths to serve a different run:
+
+| `--model` | Checkpoint | Test macro-F1 |
+|---|---|---|
+| `BERT` | `results/runs/bert-base-uncased_lr5e-05_e5_s42/checkpoint-2905` | 0.9114 |
+| `ModernBERT` | `results/runs/answerdotai_ModernBERT-base_lr5e-05_e5_s42/checkpoint-1743` | 0.9141 |
+
+Both currently point at the 5-epoch runs. Note that the **3-epoch ModernBERT is the
+stronger model** (0.9208) — swap `CHECKPOINTS["ModernBERT"]` to
+`answerdotai_ModernBERT-base_lr5e-05_s42/checkpoint-1743` to serve it.
+
+**Checkpoints are not in this repository** — they are ~1.2–1.7 GB each, well past GitHub's
+100 MB per-file limit, and are gitignored. A fresh clone has no weights, and the script
+will exit with the missing path. Run the fine-tuning commands above first; the checkpoints
+appear under `results/runs/` automatically.
+
+One caveat on the probabilities: `p(claim)` saturates at 0.0000 and 1.0000 because the
+models are badly calibrated (see [Training behaviour](#training-behaviour)). Use it for
+the decision and for ranking, but do not read it as a confidence level or threshold on it
+without temperature scaling first.
+
 ## Repo layout
 
 ```
