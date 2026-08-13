@@ -1,0 +1,23 @@
+{
+  "run": "smoke_bert",
+  "model": "bert-base-uncased",
+  "dev": {
+    "dev_loss": 0.5827689170837402,
+    "dev_accuracy": 0.8731848983543078,
+    "dev_macro_f1": 0.872299807585782,
+    "dev_precision_pos": 0.9006622516556292,
+    "dev_recall_pos": 0.8259109311740891,
+    "dev_f1_pos": 0.8616684266103485,
+    "dev_runtime": 6.0002,
+    "dev_samples_per_second": 172.161,
+    "dev_steps_per_second": 2.833,
+    "epoch": 1.0
+  },
+  "test": {
+    "accuracy": 0.8592307692307692,
+    "macro_f1": 0.8574820998955228,
+    "precision_pos": 0.8853503184713376,
+    "recall_pos": 0.8021434460016488,
+    "f1_pos": 0.8416955017301038
+  }
+}

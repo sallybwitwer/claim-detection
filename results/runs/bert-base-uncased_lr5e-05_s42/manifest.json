@@ -1,0 +1,40 @@
+{
+  "run": "bert-base-uncased_lr5e-05_s42",
+  "finished_at": "2026-08-12T22:11:17.703991+00:00",
+  "args": {
+    "model": "bert-base-uncased",
+    "lr": 5e-05,
+    "epochs": 3,
+    "batch_size": 16,
+    "eval_batch_size": 64,
+    "max_length": 128,
+    "seed": 42,
+    "dev_size": 0.1,
+    "warmup_ratio": 0.1,
+    "weight_decay": 0.01,
+    "data_dir": "data/ours",
+    "output_root": "results",
+    "run_name": null,
+    "tensorboard": false,
+    "max_train_samples": null
+  },
+  "device": "mps",
+  "versions": {
+    "python": "3.9.6",
+    "torch": "2.8.0",
+    "transformers": "4.57.6"
+  },
+  "data": {
+    "cleaning": {
+      "rows_in": 10397,
+      "dropped_empty_text": 1,
+      "dropped_duplicate_text": 56,
+      "dropped_overlaps_test": 17,
+      "rows_out": 10323
+    },
+    "n_train": 9290,
+    "n_dev": 1033,
+    "n_test": 2600
+  },
+  "preds_path": "results/preds/bert-base-uncased_lr5e-05_s42.csv"
+}

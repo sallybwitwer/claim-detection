@@ -1,0 +1,23 @@
+{
+  "run": "answerdotai_ModernBERT-base_lr5e-05_e5_s42",
+  "model": "answerdotai/ModernBERT-base",
+  "dev": {
+    "dev_loss": 0.4457224905490875,
+    "dev_accuracy": 0.9225556631171346,
+    "dev_macro_f1": 0.9223950116445045,
+    "dev_precision_pos": 0.9207317073170732,
+    "dev_recall_pos": 0.917004048582996,
+    "dev_f1_pos": 0.9188640973630832,
+    "dev_runtime": 11.6598,
+    "dev_samples_per_second": 88.595,
+    "dev_steps_per_second": 1.458,
+    "epoch": 5.0
+  },
+  "test": {
+    "accuracy": 0.9146153846153846,
+    "macro_f1": 0.9141373481114679,
+    "precision_pos": 0.9153394803017603,
+    "recall_pos": 0.9002473206924979,
+    "f1_pos": 0.9077306733167082
+  }
+}
