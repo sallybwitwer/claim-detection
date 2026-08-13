@@ -15,19 +15,21 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO_ROOT)
 
+from enums import Checkpoint  # noqa: E402
 from src.metrics import softmax  # noqa: E402
 
 MAX_LENGTH = 128
 
-CHECKPOINTS = {
-    "BERT": "results/runs/bert-base-uncased_lr5e-05_e5_s42/checkpoint-2905",
-    "ModernBERT": "results/runs/answerdotai_ModernBERT-base_lr5e-05_e5_s42/checkpoint-1743",
-}
-
 
 def parse_args(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--model", required=True, choices=sorted(CHECKPOINTS), help="which model")
+    p.add_argument(
+        "--model",
+        required=True,
+        type=str.upper,  # accept any casing, e.g. --model ModernBERT
+        choices=sorted(Checkpoint.__members__),
+        help="which model",
+    )
     p.add_argument("--text", required=True, nargs="+", help="one or more sentences")
     return p.parse_args(argv)
 
@@ -41,32 +43,48 @@ def resolve_device() -> str:
 
 
 @torch.no_grad()
-def main(argv=None) -> int:
-    args = parse_args(argv)
+def predict(model, claims):
+    """Classify sentences as claims.
 
-    ckpt = os.path.join(REPO_ROOT, CHECKPOINTS[args.model])
+    ``model`` is "BERT" or "MODERNBERT"; ``claims`` is a list of sentences.
+    Returns one dict per sentence:
+    ``{"text": ..., "label": "claim" | "not_claim", "prob_claim": float}``.
+    """
+    model = model.upper()
+    ckpt = os.path.join(REPO_ROOT, Checkpoint[model])
     if not os.path.isdir(ckpt):
-        raise SystemExit(f"checkpoint not found: {ckpt}\nTrain the model first, or fix CHECKPOINTS.")
+        raise SystemExit(f"checkpoint not found: {ckpt}\nTrain the model first, or fix Checkpoint.")
 
     # ModernBERT's torch.compile path is unsupported on MPS; sdpa replaces
     # flash-attention, which is CUDA-only (see src/models.py).
     kwargs = {"attn_implementation": "sdpa", "reference_compile": False}
-    model = AutoModelForSequenceClassification.from_pretrained(
-        ckpt, **(kwargs if args.model == "ModernBERT" else {})
+    encoder = AutoModelForSequenceClassification.from_pretrained(
+        ckpt, **(kwargs if model.upper() == "MODERNBERT" else {})
     )
     tokenizer = AutoTokenizer.from_pretrained(ckpt)
 
     device = resolve_device()
-    model.eval().to(device)
+    encoder.eval().to(device)
 
     enc = tokenizer(
-        args.text, truncation=True, max_length=MAX_LENGTH, padding=True, return_tensors="pt"
+        claims, truncation=True, max_length=MAX_LENGTH, padding=True, return_tensors="pt"
     ).to(device)
-    probs = softmax(model(**enc).logits.float().cpu().numpy())
+    probs = softmax(encoder(**enc).logits.float().cpu().numpy())
 
-    for text, p in zip(args.text, probs):
-        prediction = model.config.id2label[int(p.argmax())]
-        print(f"{prediction}  p(claim)={p[1]:.4f}  {text}")
+    return [
+        {
+            "text": text,
+            "label": encoder.config.id2label[int(p.argmax())],
+            "prob_claim": float(p[1]),
+        }
+        for text, p in zip(claims, probs)
+    ]
+
+
+def main(argv=None) -> int:
+    args = parse_args(argv)
+    for r in predict(args.model, args.text):
+        print(f"{r['label']}  p(claim)={r['prob_claim']:.4f}  {r['text']}")
     return 0
 
 

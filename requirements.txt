@@ -14,3 +14,12 @@ accelerate>=0.30
 # Logging & reporting
 tensorboard>=2.16
 matplotlib>=3.8
+
+# API
+fastapi>=0.115
+pydantic>=2.7          # v2 API; src/api.py uses BaseModel with list[str]
+uvicorn>=0.30          # ASGI server for running src/api.py
+
+# Tests
+pytest>=8.0
+httpx>=0.27            # required by fastapi's TestClient
