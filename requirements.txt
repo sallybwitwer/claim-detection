@@ -1,0 +1,16 @@
+# Core
+pandas>=2.0
+numpy>=1.24
+scikit-learn>=1.3
+
+scipy>=1.11
+
+# Encoder finetuning
+torch>=2.4             # MPS backend; 2.4+ has the widest op coverage
+transformers>=4.48     # ModernBERT requires >=4.48
+datasets>=2.18
+accelerate>=0.30
+
+# Logging & reporting
+tensorboard>=2.16
+matplotlib>=3.8

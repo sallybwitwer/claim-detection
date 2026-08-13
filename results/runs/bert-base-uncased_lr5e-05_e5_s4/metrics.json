@@ -1,0 +1,23 @@
+{
+  "run": "bert-base-uncased_lr5e-05_e5_s4",
+  "model": "bert-base-uncased",
+  "dev": {
+    "dev_loss": 0.5293207764625549,
+    "dev_accuracy": 0.9186834462729913,
+    "dev_macro_f1": 0.9185288395814711,
+    "dev_precision_pos": 0.9149797570850202,
+    "dev_recall_pos": 0.9149797570850202,
+    "dev_f1_pos": 0.9149797570850202,
+    "dev_runtime": 7.0676,
+    "dev_samples_per_second": 146.16,
+    "dev_steps_per_second": 2.405,
+    "epoch": 5.0
+  },
+  "test": {
+    "accuracy": 0.911923076923077,
+    "macro_f1": 0.9113502500402378,
+    "precision_pos": 0.9176570458404074,
+    "recall_pos": 0.8911788953009069,
+    "f1_pos": 0.90422417398578
+  }
+}

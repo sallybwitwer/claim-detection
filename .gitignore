@@ -15,6 +15,8 @@ downloads/
 eggs/
 .eggs/
 lib/
+docs/
+preds/
 lib64/
 parts/
 sdist/
@@ -216,3 +218,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Training checkpoints (large; metrics.json/manifest.json are kept)
+results/runs/**/checkpoint-*/
