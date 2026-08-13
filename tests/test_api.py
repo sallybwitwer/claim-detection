@@ -13,7 +13,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import src.api as api
-from enums import Checkpoint
+from enums import Model
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -24,7 +24,7 @@ def calls(monkeypatch):
     recorded = []
 
     def fake_predict(model, claims):
-        Checkpoint[model]  # the same lookup the real predict does, so bad names still fail
+        Model[model]  # the same lookup the real predict does, so bad names still fail
         recorded.append((model, claims))
         return [
             {"text": c, "label": "claim", "prob_claim": 0.99} for c in claims
@@ -86,20 +86,20 @@ def test_empty_claims_list_returns_no_predictions(client, calls):
 def test_bert_reaches_predict_as_a_known_checkpoint(client, calls):
     post(client, model="BERT", claims=["Crime rose 12%."])
 
-    assert calls[0][0] in Checkpoint.__members__
+    assert calls[0][0] in Model.__members__
 
 
 def test_modernbert_reaches_predict_as_a_known_checkpoint(client, calls):
     post(client, model="ModernBERT", claims=["Crime rose 12%."])
 
-    assert calls[0][0] in Checkpoint.__members__
+    assert calls[0][0] in Model.__members__
 
 
 @pytest.mark.parametrize("name", ["bert", "BERT", "modernbert", "ModernBERT", "MODERNBERT"])
 def test_model_name_is_case_insensitive(client, calls, name):
     post(client, model=name, claims=["Crime rose 12%."])
 
-    assert calls[0][0] in Checkpoint.__members__
+    assert calls[0][0] in Model.__members__
 
 
 def test_unknown_model_is_a_client_error_not_a_server_error(client, calls):
@@ -127,7 +127,7 @@ def test_malformed_requests_are_rejected(client, calls, body):
 
 # --- optional end-to-end check -------------------------------------------
 
-_bert_ckpt = os.path.join(REPO_ROOT, Checkpoint.BERT.value)
+_bert_ckpt = os.path.join(REPO_ROOT, Model.BERT.value)
 
 
 @pytest.mark.skipif(

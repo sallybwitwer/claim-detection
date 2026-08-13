@@ -15,7 +15,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO_ROOT)
 
-from enums import Checkpoint  # noqa: E402
+from enums import Model  # noqa: E402
 from src.metrics import softmax  # noqa: E402
 
 MAX_LENGTH = 128
@@ -27,7 +27,7 @@ def parse_args(argv=None):
         "--model",
         required=True,
         type=str.upper,  # accept any casing, e.g. --model ModernBERT
-        choices=sorted(Checkpoint.__members__),
+        choices=sorted(Model.__members__),
         help="which model",
     )
     p.add_argument("--text", required=True, nargs="+", help="one or more sentences")
@@ -51,9 +51,9 @@ def predict(model, claims):
     ``{"text": ..., "label": "claim" | "not_claim", "prob_claim": float}``.
     """
     model = model.upper()
-    ckpt = os.path.join(REPO_ROOT, Checkpoint[model])
+    ckpt = os.path.join(REPO_ROOT, Model[model])
     if not os.path.isdir(ckpt):
-        raise SystemExit(f"checkpoint not found: {ckpt}\nTrain the model first, or fix Checkpoint.")
+        raise SystemExit(f"checkpoint not found: {ckpt}\nTrain the model first, or fix Model.")
 
     # ModernBERT's torch.compile path is unsupported on MPS; sdpa replaces
     # flash-attention, which is CUDA-only (see src/models.py).

@@ -1,17 +1,17 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from scripts.predict import predict
-from enums import Checkpoint
+from enums import Model
 
 app = FastAPI()
 
 
 def resolve_model(name: str) -> str:
-    """Match a requested model name to a Checkpoint member, ignoring case."""
-    if name.upper() not in Checkpoint.__members__:
+    """Match a requested model name to a Model member, ignoring case."""
+    if name.upper() not in Model.__members__:
         raise HTTPException(
             status_code=400,
-            detail=f"unknown model {name!r}; choose from {sorted(Checkpoint.__members__)}",
+            detail=f"unknown model {name!r}; choose from {sorted(Model.__members__)}",
         )
     return name.upper()
 

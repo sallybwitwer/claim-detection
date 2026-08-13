@@ -238,7 +238,7 @@ Two arguments, both required. `--model` takes `BERT` or `MODERNBERT` in any casi
 `--text` takes any number of sentences. Sentences are truncated at 128 tokens, matching
 training.
 
-Each name maps to a fixed checkpoint in the `Checkpoint` enum in `enums.py` — edit those
+Each name maps to a fixed checkpoint in the `Model` enum in `enums.py` — edit those
 paths to serve a different run:
 
 | `--model` | Checkpoint | Test macro-F1 |
@@ -247,7 +247,7 @@ paths to serve a different run:
 | `MODERNBERT` | `results/runs/answerdotai_ModernBERT-base_lr5e-05_e5_s42/checkpoint-1743` | 0.9141 |
 
 Both currently point at the 5-epoch runs. Note that the **3-epoch ModernBERT is the
-stronger model** (0.9208) — point `Checkpoint.MODERNBERT` at
+stronger model** (0.9208) — point `Model.MODERNBERT` at
 `answerdotai_ModernBERT-base_lr5e-05_s42/checkpoint-1743` to serve it.
 
 **Checkpoints are not in this repository** — they are ~1.2–1.7 GB each, well past GitHub's
