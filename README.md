@@ -234,19 +234,20 @@ claim  p(claim)=1.0000  The unemployment rate fell to 3.4% in January 2023.
 not_claim  p(claim)=0.0000  I think we should all try to be kinder to one another.
 ```
 
-Two arguments, both required. `--model` takes `BERT` or `ModernBERT`; `--text` takes any
-number of sentences. Sentences are truncated at 128 tokens, matching training.
+Two arguments, both required. `--model` takes `BERT` or `MODERNBERT` in any casing;
+`--text` takes any number of sentences. Sentences are truncated at 128 tokens, matching
+training.
 
-Each name maps to a fixed checkpoint in the `CHECKPOINTS` dict at the top of the script —
-edit those paths to serve a different run:
+Each name maps to a fixed checkpoint in the `Model` enum in `enums.py` — edit those
+paths to serve a different run:
 
 | `--model` | Checkpoint | Test macro-F1 |
 |---|---|---|
 | `BERT` | `results/runs/bert-base-uncased_lr5e-05_e5_s42/checkpoint-2905` | 0.9114 |
-| `ModernBERT` | `results/runs/answerdotai_ModernBERT-base_lr5e-05_e5_s42/checkpoint-1743` | 0.9141 |
+| `MODERNBERT` | `results/runs/answerdotai_ModernBERT-base_lr5e-05_e5_s42/checkpoint-1743` | 0.9141 |
 
 Both currently point at the 5-epoch runs. Note that the **3-epoch ModernBERT is the
-stronger model** (0.9208) — swap `CHECKPOINTS["ModernBERT"]` to
+stronger model** (0.9208) — point `Model.MODERNBERT` at
 `answerdotai_ModernBERT-base_lr5e-05_s42/checkpoint-1743` to serve it.
 
 **Checkpoints are not in this repository** — they are ~1.2–1.7 GB each, well past GitHub's
@@ -258,6 +259,69 @@ One caveat on the probabilities: `p(claim)` saturates at 0.0000 and 1.0000 becau
 models are badly calibrated (see [Training behaviour](#training-behaviour)). Use it for
 the decision and for ranking, but do not read it as a confidence level or threshold on it
 without temperature scaling first.
+
+## Running the API
+
+`src/api.py` exposes the same models over HTTP. From the repo root:
+
+```bash
+.venv/bin/uvicorn src.api:app --reload
+```
+
+Serving on `http://127.0.0.1:8000`; drop `--reload` if you don't want restarts on file
+changes. **Run it from the repo root** — `src/api.py` imports `scripts.predict` and
+`enums`, which resolve relative to the working directory, so starting it elsewhere fails
+at import.
+
+```bash
+curl -X POST http://127.0.0.1:8000/detect-claims \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"MODERNBERT","claims":["The unemployment rate fell to 3.4% in January 2023.","I think we should all be kinder."]}'
+```
+
+```json
+{"predictions":[
+  {"text":"The unemployment rate fell to 3.4% in January 2023.","label":"claim","prob_claim":1.0},
+  {"text":"I think we should all be kinder.","label":"not_claim","prob_claim":7.6e-07}
+]}
+```
+
+`model` accepts `BERT` or `MODERNBERT` in any casing; an unknown name returns 400 with
+`{"detail":"unknown model 'RoBERTa'; choose from ['BERT', 'MODERNBERT']"}`. Malformed
+requests return 422.
+
+FastAPI generates interactive docs at **http://127.0.0.1:8000/docs**, which is an easier
+way to poke at the endpoint than curl.
+
+**The model is loaded from disk on every request** — ~570 MB for ModernBERT, so each call
+takes a few seconds, nearly all of it loading rather than inference. That is fine for
+trying the API out, but it will not survive real traffic or concurrent requests. Caching
+each model in memory at startup (a module-level cache, or FastAPI's `lifespan` handler) is
+the fix when that matters.
+
+## Tests
+
+```bash
+.venv/bin/python -m pytest tests/ -q
+```
+
+Requires `pytest` (`pip install pytest`); `fastapi` and `httpx` are already needed by the
+API itself.
+
+`tests/test_api.py` covers the `/detect-claims` endpoint: response shape, one prediction
+per claim, claims passed through untouched, empty input, case-insensitive model names,
+a 400 for unknown models, and 422s for malformed requests. It runs in about 5 seconds
+because `predict` is replaced with a fake — the real one loads a ~570 MB checkpoint that
+is not in the repository.
+
+One test does exercise the real model and is skipped by default:
+
+```bash
+RUN_INTEGRATION=1 .venv/bin/python -m pytest tests/ -q
+```
+
+It needs the BERT checkpoint present under `results/runs/`, and stays skipped if it is
+absent, so the command is safe to run on a fresh clone.
 
 ## Repo layout
 
